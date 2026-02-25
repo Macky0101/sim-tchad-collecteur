@@ -16,6 +16,7 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import "react-native-reanimated";
 import "./global.css";
+import { DatabaseProvider } from "./providers/DatabaseProvider";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -101,25 +102,29 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <ActorProvider>
-        <DataProvider>
-          <ThemeProvider
-            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-          >
-            <NavigationGuard>
-              <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen
-                  name="modal"
-                  options={{ presentation: "modal", title: "Modal" }}
-                />
-              </Stack>
-            </NavigationGuard>
-            <StatusBar style="auto" />
-          </ThemeProvider>
-        </DataProvider>
-      </ActorProvider>
+      <DatabaseProvider>
+        <ActorProvider>
+          <DataProvider>
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
+              <NavigationGuard>
+                <Stack
+                  screenOptions={{ headerShown: false, animation: "fade" }}
+                >
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen
+                    name="modal"
+                    options={{ presentation: "modal", title: "Modal" }}
+                  />
+                </Stack>
+              </NavigationGuard>
+              <StatusBar style="auto" />
+            </ThemeProvider>
+          </DataProvider>
+        </ActorProvider>
+      </DatabaseProvider>
     </AuthProvider>
   );
 }

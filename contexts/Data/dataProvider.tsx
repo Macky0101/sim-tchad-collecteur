@@ -69,6 +69,8 @@ import {
 import { CreateStoreRequest, Store, UpdateStoreRequest } from "@/types/stores";
 import { UnitOfMeasure } from "@/types/unitsOfMeasure";
 
+import { database } from "@/app/database";
+import { syncCollection } from "@/app/database/sync/helpers";
 import { getAllProductTypesService } from "@/services/productTypes/getAll";
 import { GetTypeActorsService } from "@/services/typeActors/getAll";
 import { typeActor } from "@/types/typeActor";
@@ -95,18 +97,25 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   // pour la section secteur
   // ---------------------------------------------------------
 
+  // const getAllSectors = async () => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const response = await getAllSectorsService();
+  //     // console.log("Sectors response:", response);
+  //     setSectors(response.data || []);
+  //   } catch (error: any) {
+  //     setError(error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const getAllSectors = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await getAllSectorsService();
-      // console.log("Sectors response:", response);
-      setSectors(response.data || []);
-    } catch (error: any) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
+    await syncCollection("sectors", getAllSectorsService); // ou juste syncAll si tu veux tout
+    const sectors = await database.get("sectors").query().fetch();
+    console.log("sectors", sectors);
+    setSectors(data);
   };
 
   const getSectorById = async (id: string) => {
