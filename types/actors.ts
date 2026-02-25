@@ -2,26 +2,27 @@
  * Interface pour l'entité Actor (acteur).
  * Représente les données d'un acteur dans l'API.
  */
+
 export interface Actor {
   id?: number; // Optionnel si auto-généré par backend
-  name: string; // Renommé "actor" → "name" pour clarté
-  sigle: string; // Renommé "actor_sigle" → "sigle"
+  actor: string; // Renommé "actor" → "name" pour clarté
+  actor_sigle: string; // Renommé "actor_sigle" → "sigle"
   email: string;
   phone: string;
   whatsapp?: string; // Optionnel
-  actorTypeId: number; // Renommé pour camelCase
-  isActive: boolean;
-  headquarterPhoto?: string; // Optionnel
+  actor_type_id: number; // Renommé pour camelCase
+  is_active: number;
+  headquarter_photo?: string; // Optionnel
   logo?: string; // Optionnel
   address: string;
   latitude?: number; // Optionnel si pas toujours présent
   longitude?: number; // Optionnel
   password?: string; // Seulement pour create/register – ne stocke pas en clair après !
-  updatedBy?: string; // Optionnel
+  updated_by?: string; // Optionnel
   code: string;
   description?: string; // Optionnel
-  createdAt?: string; // Ajouté (ISO date si backend)
-  updatedAt?: string; // Ajouté
+  created_at?: string; // Ajouté (ISO date si backend)
+  updated_at?: string; // Ajouté
 }
 
 /**

@@ -48,23 +48,23 @@ const SLIDES: OnboardingSlide[] = [
   {
     id: "1",
     image: require("../../../assets/images/icon.png"),
-    title: "Explorez les Produits",
+    title: "Collecte des prix",
     subtitle:
-      "Parcourez des milliers de produits de qualite provenant de vendeurs verifies du monde entier.",
+      "Saisissez rapidement les prix des produits agricoles sur les differents marches du Tchad.",
   },
   {
     id: "2",
     image: require("../../../assets/images/icon.png"),
-    title: "Livraison Rapide",
+    title: "Suivi en temps reel",
     subtitle:
-      "Suivez vos commandes en temps reel et recevez-les directement a votre porte.",
+      "Les donnees collectees alimentent le systeme national de suivi des prix pour une meilleure prise de decision.",
   },
   {
     id: "3",
     image: require("../../../assets/images/icon.png"),
-    title: "Paiement Securise",
+    title: "Fonctionne hors ligne",
     subtitle:
-      "Payez en toute confiance avec nos methodes de paiement securisees et protegees.",
+      "Collectez les prix meme sans connexion Internet. Les donnees se synchronisent automatiquement.",
   },
 ];
 

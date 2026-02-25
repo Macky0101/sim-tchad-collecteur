@@ -1,22 +1,3 @@
-// {
-//     "Message": "Production areas recuperees avec succes",
-//     "data": [
-//         {
-//             "id": 1,
-//             "name": "Zone de production Sud v2",
-//             "code": "ZPSUD001",
-//             "actor_id": 1,
-//             "latitude": "12.13456789",
-//             "longitude": "15.06789123",
-//             "address": "Région du Chari-Baguirmi",
-//             "photo": "photos/zones/zpsud001.jpg",
-//             "updated_by": "admin",
-//             "created_at": "2026-01-14T04:52:55.000000Z",
-//             "updated_at": "2026-01-22T02:29:20.000000Z"
-//         }
-//     ]
-// }
-
 export interface ProductionArea {
   id: number;
   name: string;
