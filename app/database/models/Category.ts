@@ -1,8 +1,7 @@
 import { Model } from "@nozbe/watermelondb";
 import {
-    field,
-    immutableRelation,
-    writer,
+  field,
+  immutableRelation
 } from "@nozbe/watermelondb/decorators";
 import { Associations } from "@nozbe/watermelondb/Model";
 import Sector from "./Sector";
@@ -30,7 +29,6 @@ export default class Category extends Model {
   // Relation typée
   @immutableRelation("sectors", "sector_id") sector!: Sector;
 
-  @writer
   async updateFromServer(data: any) {
     await this.update((record) => {
       record.serverId = String(data.id);

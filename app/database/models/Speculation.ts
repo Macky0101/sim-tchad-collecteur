@@ -2,8 +2,7 @@ import { Category } from "@/types/category";
 import { Model } from "@nozbe/watermelondb";
 import {
   field,
-  immutableRelation,
-  writer,
+  immutableRelation
 } from "@nozbe/watermelondb/decorators";
 import { Associations } from "@nozbe/watermelondb/Model";
 
@@ -30,7 +29,6 @@ export default class Speculation extends Model {
 
   @immutableRelation("categories", "category_id") category!: Category;
 
-  @writer
   async updateFromServer(data: any) {
     await this.update((record) => {
       record.serverId = String(data.id);

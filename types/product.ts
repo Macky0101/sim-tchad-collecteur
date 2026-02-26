@@ -35,14 +35,15 @@ export interface GetOneProductResponse {
 export interface CreateProductRequest {
   name: string;
   code: string;
-  product_type_id: number;
-  speculation_id: number;
-  unit_of_measure_id: number;
-  production_area_id: number;
-  actor_id: number;
-  store_id: number;
-  quantity: number;
-  price: number;
+  description?: string;
+  product_type_id: number | string;
+  speculation_id: number | string;
+  unit_of_measure_id: number | string;
+  production_area_id: number | string;
+  actor_id: number | string;
+  store_id: number | string;
+  quantity: number | string;
+  price: number | string;
   origin: string;
   shape: string;
   measure_used: string;

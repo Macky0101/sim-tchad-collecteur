@@ -3,8 +3,7 @@ import { Actor } from "@/types/actors";
 import { Model } from "@nozbe/watermelondb";
 import {
   field,
-  immutableRelation,
-  writer,
+  immutableRelation
 } from "@nozbe/watermelondb/decorators";
 import { Associations } from "@nozbe/watermelondb/Model";
 
@@ -35,7 +34,6 @@ export default class Store extends Model {
 
   @immutableRelation("actors", "actor_id") actor!: Actor;
 
-  @writer
   async updateFromServer(data: any) {
     await this.update((record) => {
       record.serverId = String(data.id);

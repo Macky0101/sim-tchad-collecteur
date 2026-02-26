@@ -1,6 +1,6 @@
 // src/database/models/UnitOfMeasure.ts
 import { Model } from "@nozbe/watermelondb";
-import { field, writer } from "@nozbe/watermelondb/decorators";
+import { field } from "@nozbe/watermelondb/decorators";
 
 export default class UnitOfMeasure extends Model {
   static table = "units_of_measure";
@@ -14,7 +14,6 @@ export default class UnitOfMeasure extends Model {
   @field("created_at") createdAt!: number;
   @field("updated_at") updatedAt!: number;
 
-  @writer
   async updateFromServer(data: any) {
     await this.update((record) => {
       record.serverId = String(data.id);

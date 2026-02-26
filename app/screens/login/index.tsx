@@ -414,6 +414,7 @@ export function LoginScreen({
             </Text>
           </Pressable>
         </View>
+        <View className="mb-20"></View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

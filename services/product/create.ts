@@ -1,15 +1,21 @@
 import { ENDPOINTS } from "@/constants/api";
-import api from "@/lib/axios";
+import { getAccessToken } from "@/lib/secureStore";
 
 export const createProductService = async (formData: FormData) => {
-  const { data: response } = await api.post(
-    ENDPOINTS.products.sendWithImage,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+  const token = await getAccessToken();
+
+  const response = await fetch(ENDPOINTS.products.sendWithImage, {
+    method: "POST",
+    body: formData,
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-  );
-  return response;
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(JSON.stringify(errorData));
+  }
+
+  return await response.json();
 };

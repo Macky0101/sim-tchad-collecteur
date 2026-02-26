@@ -7,8 +7,7 @@ import { UnitOfMeasure } from "@/types/unitsOfMeasure";
 import { Model } from "@nozbe/watermelondb";
 import {
     field,
-    immutableRelation,
-    writer,
+    immutableRelation
 } from "@nozbe/watermelondb/decorators";
 import { Associations } from "@nozbe/watermelondb/Model";
 
@@ -65,7 +64,6 @@ export default class Product extends Model {
   @immutableRelation("actors", "actor_id") actor!: Actor;
   @immutableRelation("stores", "store_id") store!: Store;
 
-  @writer
   async updateFromServer(data: any) {
     await this.update((record) => {
       // Synchronisation

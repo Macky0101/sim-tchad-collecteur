@@ -15,25 +15,28 @@ import { syncCollection } from "./helpers";
 export const syncAllMasterData = async () => {
   console.log("🔄 Sync master data en cours...");
 
-  const results = await Promise.allSettled([
-    syncCollection("actors", GetActorsService),
-    syncCollection("sectors", getAllSectorsService),
-    syncCollection("categories", getAllCategoryService),
-    syncCollection("speculations", getAllSpeculationsService),
-    syncCollection("stores", getAllStoresService),
-    syncCollection("products", getAllProductsService),
-    syncCollection("currencies", getAllCurrenciesService),
-    syncCollection("production_areas", getAllProductionAreasService),
-    syncCollection("product_types", getAllProductTypesService),
-    syncCollection("settings", getAllSettingsService),
-    syncCollection("type_actors", GetTypeActorsService),
-    syncCollection("units_of_measure", getAllUnitsOfMeasureService),
-  ]);
+  const collections = [
+    { name: "actors", service: GetActorsService },
+    { name: "sectors", service: getAllSectorsService },
+    { name: "categories", service: getAllCategoryService },
+    { name: "speculations", service: getAllSpeculationsService },
+    { name: "stores", service: getAllStoresService },
+    { name: "products", service: getAllProductsService },
+    { name: "currencies", service: getAllCurrenciesService },
+    { name: "production_areas", service: getAllProductionAreasService },
+    { name: "product_types", service: getAllProductTypesService },
+    { name: "settings", service: getAllSettingsService },
+    { name: "type_actors", service: GetTypeActorsService },
+    { name: "units_of_measure", service: getAllUnitsOfMeasureService },
+  ];
 
-  const failed = results.filter((r) => r.status === "rejected");
-  if (failed.length > 0) {
-    console.warn(`⚠️ ${failed.length} collections ont échoué`);
-  } else {
-    console.log("✅ Sync terminé – zéro doublon garanti !");
+  for (const col of collections) {
+    try {
+      await syncCollection(col.name, col.service);
+    } catch (error) {
+      console.warn(`⚠️ La collection "${col.name}" a échoué:`, error);
+    }
   }
+
+  console.log("✅ Sync terminé !");
 };

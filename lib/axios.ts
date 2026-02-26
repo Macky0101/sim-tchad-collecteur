@@ -5,7 +5,6 @@ import { getAccessToken } from "./secureStore";
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
-  headers: { "Content-Type": "application/json" },
 });
 
 api.interceptors.request.use(async (config) => {
@@ -13,19 +12,13 @@ api.interceptors.request.use(async (config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+    config.headers["Content-Type"] = "multipart/form-data";
+  }
+
   return config;
 });
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      // Logout auto et redirect
-      // await logout(); // Si intégré
-      // const router = useRouter(); router.replace('/login');
-    }
-    return Promise.reject(error);
-  },
-);
 
 export default api;

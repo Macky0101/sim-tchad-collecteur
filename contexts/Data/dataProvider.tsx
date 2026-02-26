@@ -637,9 +637,13 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setError(null);
     try {
       const response = await createProductService(formData);
-      setData(response);
+      console.log("Product created successfully:", response.data);
+      setData(response.data);
+      return response.data;
     } catch (error: any) {
+      console.log("Product creation failed:", error);
       setError(error.message);
+      return error;
     } finally {
       setLoading(false);
     }

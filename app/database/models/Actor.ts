@@ -1,5 +1,5 @@
 import { Model } from "@nozbe/watermelondb";
-import { field, writer } from "@nozbe/watermelondb/decorators";
+import { field } from "@nozbe/watermelondb/decorators";
 
 export default class Actor extends Model {
   static table = "actors";
@@ -26,7 +26,6 @@ export default class Actor extends Model {
   @field("created_at") createdAt!: number;
   @field("updated_at") updatedAt!: number;
 
-  @writer
   async updateFromServer(data: any) {
     await this.update((record) => {
       record.serverId = String(data.id);
