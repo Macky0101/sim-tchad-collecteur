@@ -1,5 +1,6 @@
 export interface Store {
   id: number;
+  serverId: string;
   name: string;
   code: string;
   description: string;

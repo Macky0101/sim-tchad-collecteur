@@ -24,7 +24,7 @@ export const updateProductLocal = async (
       throw new Error("Un autre produit avec ce code existe déjà");
     }
 
-    // ✅ UPDATE
+    // UPDATE
     await existingProduct.update((product: any) => {
       product.name = data.name;
       product.code = data.code;

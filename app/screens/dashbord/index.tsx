@@ -2,8 +2,8 @@ import { getProducts } from "@/app/database/services/product/getProducts";
 import { useTabBarHeight } from "@/hooks/use-tab-bar-height";
 import { Product } from "@/types/product";
 import { MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -115,9 +115,11 @@ export default function DashboardScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, []),
+  );
 
   const handleManualSync = async () => {
     setRefreshing(true);
@@ -176,20 +178,12 @@ export default function DashboardScreen() {
 
           {/* Section compteur */}
           <View className="items-center mb-10">
-            <View className="flex-row items-center gap-2 px-3 py-1.5 bg-white dark:bg-card-dark rounded-full shadow-sm mb-4">
-              <View className="w-5 h-5 bg-primary rounded-full items-center justify-center">
-                <Text className="text-[10px] text-black font-bold">TD</Text>
-              </View>
-              <Text className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                SIM CHAD
-              </Text>
-            </View>
             <Text className="text-slate-500 dark:text-slate-400 font-medium mb-1 uppercase tracking-widest text-[11px]">
               Prix Collectés Aujourd'hui
             </Text>
             <View className="flex-row items-center justify-center gap-1">
               <Text className="text-7xl font-bold text-slate-900 dark:text-white">
-                12
+                {stats.products}
               </Text>
             </View>
             <View className="mt-4 items-center">
@@ -209,7 +203,7 @@ export default function DashboardScreen() {
           <View className="flex-row gap-4 mb-4">
             <TouchableOpacity
               onPress={() => router.push("/screens/form/product")}
-              className="flex-1 bg-white dark:bg-card-dark p-4 rounded-[2rem] shadow-sm items-center aspect-square active:opacity-70"
+              className="flex-1 bg-white dark:bg-card-dark p-4 rounded-[1rem] shadow-sm items-center aspect-square active:opacity-70"
             >
               <View className="w-12 h-12 rounded-2xl bg-primary/10 items-center justify-center mb-2">
                 <MaterialIcons name="add-circle" size={24} color={PRIMARY} />
@@ -218,7 +212,10 @@ export default function DashboardScreen() {
                 Nouvelle
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity className="flex-1 bg-white dark:bg-card-dark p-4 rounded-[2rem] shadow-sm items-center aspect-square active:opacity-70">
+            <TouchableOpacity
+              onPress={() => router.push("/screens/stores")}
+              className="flex-1 bg-white dark:bg-card-dark p-4 rounded-[1rem] shadow-sm items-center aspect-square active:opacity-70"
+            >
               <View className="w-12 h-12 rounded-2xl bg-primary/10 items-center justify-center mb-2">
                 <MaterialIcons name="storefront" size={24} color={PRIMARY} />
               </View>
@@ -229,7 +226,7 @@ export default function DashboardScreen() {
             <TouchableOpacity
               onPress={handleManualSync}
               disabled={refreshing}
-              className="flex-1 bg-white dark:bg-card-dark p-4 rounded-[2rem] shadow-sm items-center aspect-square active:opacity-70"
+              className="flex-1 bg-green-300 dark:bg-card-dark p-4 rounded-[1rem] shadow-sm items-center aspect-square active:opacity-70"
             >
               <View className="w-12 h-12 rounded-2xl bg-primary/10 items-center justify-center mb-2">
                 {refreshing ? (
@@ -248,7 +245,7 @@ export default function DashboardScreen() {
           <View className="flex-row gap-4 mb-8">
             <TouchableOpacity
               onPress={() => router.push("/screens/historique")}
-              className="flex-1 bg-white dark:bg-card-dark p-5 rounded-[2rem] shadow-sm flex-row items-center justify-between active:opacity-70"
+              className="flex-1 bg-white dark:bg-card-dark p-5 rounded-[1rem] shadow-sm flex-row items-center justify-between active:opacity-70"
             >
               <View>
                 <Text className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1">
@@ -269,7 +266,7 @@ export default function DashboardScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push("/profile")}
-              className="flex-1 bg-white dark:bg-card-dark p-5 rounded-[2rem] shadow-sm flex-row items-center justify-between active:opacity-70"
+              className="flex-1 bg-white dark:bg-card-dark p-5 rounded-[1rem] shadow-sm flex-row items-center justify-between active:opacity-70"
             >
               <View>
                 <Text className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-1">
@@ -289,12 +286,15 @@ export default function DashboardScreen() {
           </View>
 
           {/* Dernières saisies */}
-          <View className="bg-white dark:bg-card-dark p-6 rounded-[2.5rem] shadow-sm">
+          <View className="bg-white dark:bg-card-dark p-4 rounded-[1rem] shadow-sm">
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-base font-bold text-slate-800 dark:text-white">
                 Dernières Saisies
               </Text>
-              <TouchableOpacity className="flex-row items-center gap-1">
+              <TouchableOpacity
+                onPress={() => router.push("/screens/historique")}
+                className="flex-row items-center gap-1"
+              >
                 <Text className="text-xs font-bold text-primary">
                   Voir tout
                 </Text>
@@ -310,7 +310,7 @@ export default function DashboardScreen() {
                       key={product.id}
                       className="flex-row items-center gap-3"
                     >
-                      <View className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 items-center justify-center overflow-hidden">
+                      <View className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 items-center justify-center overflow-hidden mb-3 border border-slate-200 dark:border-slate-700">
                         {product.photo ? (
                           <Image
                             source={{ uri: product.photo }}

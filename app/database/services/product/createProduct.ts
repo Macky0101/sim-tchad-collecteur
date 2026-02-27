@@ -16,7 +16,7 @@ export const createProductLocal = async (data: CreateProductRequest) => {
       throw new Error("Un produit avec ce code existe déjà");
     }
 
-    return await productsCollection.create((product: any) => {
+    const createdProduct = await productsCollection.create((product: any) => {
       product.name = data.name;
       product.code = data.code;
       product.description = data.description ?? "";
@@ -37,5 +37,7 @@ export const createProductLocal = async (data: CreateProductRequest) => {
       product.photo = data.photo ?? null;
       product.production_date = data.production_date;
     });
+    console.log("✅ Produit créé localement:", createdProduct);
+    return createdProduct;
   });
 };

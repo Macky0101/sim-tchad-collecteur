@@ -129,45 +129,44 @@ export default function ProductFormWizard({
           database.get("stores").query().fetch(),
         ]);
 
+        // ✅ CORRECTION : Extraire server_id depuis _raw
         setProductTypes(
           pt.map((item: any) => ({
-            value: item.serverId, // camelCase (décorateur WatermelonDB)
+            value: item._raw?.server_id || item.serverId || String(item.id),
             label: item.name,
           })),
         );
         setSpeculations(
           spec.map((item: any) => ({
-            value: item.serverId,
+            value: item._raw?.server_id || item.serverId || String(item.id),
             label: item.name,
           })),
         );
         setUnitsOfMeasure(
           uom.map((item: any) => ({
-            value: item.serverId,
+            value: item._raw?.server_id || item.serverId || String(item.id),
             label: item.name,
           })),
         );
         setProductionAreas(
           pa.map((item: any) => ({
-            value: item.serverId,
+            value: item._raw?.server_id || item.serverId || String(item.id),
             label: item.name,
           })),
         );
-
         setActors(
           act.map((item: any) => ({
-            value: item.serverId,
-            label: item.actor ?? item.name, // actors utilisent le champ "actor"
+            value: item._raw?.server_id || item.serverId || String(item.id),
+            label: item.actor ?? item.name,
           })),
         );
         setStores(
           stor.map((item: any) => ({
-            value: item.serverId,
+            value: item._raw?.server_id || item.serverId || String(item.id),
             label: item.name,
           })),
         );
 
-        // Pré-remplir actor_id avec l'ID de l'utilisateur connecté
         if (user?.id) {
           setForm((prev) => ({ ...prev, actor_id: String(user.id) }));
         }
