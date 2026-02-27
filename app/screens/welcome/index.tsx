@@ -1,13 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────
-// WelcomeScreen.tsx — React Native + NativeWind (className)
-// Dark teal background with floating illustrations, title, CTA button
-// ─────────────────────────────────────────────────────────────────────
-//
-// Usage:
-//   import { WelcomeScreen } from "@/components/screens/WelcomeScreen";
-//   <WelcomeScreen onGetStarted={() => router.push("/onboarding")} />
-// ─────────────────────────────────────────────────────────────────────
-
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
@@ -45,7 +35,7 @@ interface WelcomeScreenProps {
 export function WelcomeScreen({
   onGetStarted,
   appName = "SIM TCHAD",
-  tagline = "Decouvrez des milliers de produits au meilleur prix, livres directement chez vous.",
+  tagline = "Connectez-vous à la plateforme SIM TCHAD",
 }: WelcomeScreenProps) {
   return (
     <View className="flex-1 bg-[#0a5c45]">

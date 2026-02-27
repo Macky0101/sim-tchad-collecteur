@@ -1,5 +1,5 @@
 export interface ProductType {
-  id: number;
+  id: string;
   name: string;
   code: string;
   description: string;
@@ -7,6 +7,7 @@ export interface ProductType {
   updated_by?: string;
   created_at?: string;
   updated_at?: string;
+  serverId: string;
 }
 
 export interface ListProductTypesResponse {

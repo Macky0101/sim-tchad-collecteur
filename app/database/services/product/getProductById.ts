@@ -4,7 +4,7 @@ import { Q } from "@nozbe/watermelondb";
 
 export const getProductById = async (id: string): Promise<Product | null> => {
   try {
-    return await database.read(async () => {
+    return await database.write(async () => {
       const productsCollection = database.get("products");
       const product = await productsCollection.query(Q.where("id", id)).fetch();
 

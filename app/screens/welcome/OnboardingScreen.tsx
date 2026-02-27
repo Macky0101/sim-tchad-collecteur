@@ -153,7 +153,7 @@ export function OnboardingScreen({
         </View>
 
         {/* Skip / Next row */}
-        <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center justify-between mb-15">
           <Pressable onPress={onFinish} className="px-2 py-2">
             <Text className="text-base text-[#999]">Passer</Text>
           </Pressable>

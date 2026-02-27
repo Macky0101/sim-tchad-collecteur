@@ -1,7 +1,5 @@
-import { GetActorsService } from "@/services/actors/getAll";
 import { getAllCategoryService } from "@/services/category/getAll";
 import { getAllCurrenciesService } from "@/services/currency/getAll";
-import { getAllProductsService } from "@/services/product/getAll";
 import { getAllProductionAreasService } from "@/services/production_areas/getAll";
 import { getAllProductTypesService } from "@/services/productTypes/getAll";
 import { getAllSectorsService } from "@/services/sectors/getAll";
@@ -16,12 +14,12 @@ export const syncAllMasterData = async () => {
   console.log("🔄 Sync master data en cours...");
 
   const collections = [
-    { name: "actors", service: GetActorsService },
+    // { name: "actors", service: GetActorsService },
     { name: "sectors", service: getAllSectorsService },
     { name: "categories", service: getAllCategoryService },
     { name: "speculations", service: getAllSpeculationsService },
     { name: "stores", service: getAllStoresService },
-    { name: "products", service: getAllProductsService },
+    // { name: "products", service: getAllProductsService },
     { name: "currencies", service: getAllCurrenciesService },
     { name: "production_areas", service: getAllProductionAreasService },
     { name: "product_types", service: getAllProductTypesService },

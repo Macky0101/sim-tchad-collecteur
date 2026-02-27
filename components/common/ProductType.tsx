@@ -50,7 +50,7 @@ const CloseIcon = () => (
 
 interface ProductTypeListHorizontalProps {
   productTypes: ProductType[];
-  selectedTypeId?: number | null;
+  selectedTypeId?: string | null;
   onProductTypeSelect?: (productType: ProductType) => void;
 }
 
@@ -59,18 +59,19 @@ export const ProductTypeListHorizontal = ({
   selectedTypeId,
   onProductTypeSelect,
 }: ProductTypeListHorizontalProps) => {
+  //  "Tous" avec serverId: "0"
+  const allTypes = [
+    { id: "0", serverId: "0", name: "Tous" } as ProductType,
+    ...productTypes,
+  ];
   const [modalVisible, setModalVisible] = useState(false);
 
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
 
-  // Ajoute "Tous" comme premier item (id: 0)
-  const allTypes = [{ id: 0, name: "Tous" } as ProductType, ...productTypes];
-
-  // Rendu d'un item horizontal (simplement le nom, sans icône)
   const renderHorizontalItem = ({ item }: { item: ProductType }) => {
-    const isSelected =
-      item.id === selectedTypeId || (item.id === 0 && selectedTypeId === null);
+    const itemServerId = item.serverId || item.id;
+    const isSelected = itemServerId === selectedTypeId;
 
     return (
       <TouchableOpacity

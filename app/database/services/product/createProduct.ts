@@ -16,7 +16,6 @@ export const createProductLocal = async (data: CreateProductRequest) => {
       throw new Error("Un produit avec ce code existe déjà");
     }
 
-    // ✅ create() maintenant autorisé
     return await productsCollection.create((product: any) => {
       product.name = data.name;
       product.code = data.code;
