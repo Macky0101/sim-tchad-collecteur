@@ -102,7 +102,7 @@ export default function UserProductsScreen() {
   // Édition d'un produit (navigation)
   const handleEdit = (product: Product) => {
     router.push({
-      pathname: "/screens/products/edit/[id]",
+      pathname: "/screens/historique/edit/[id]",
       params: { id: product.id },
     });
   };

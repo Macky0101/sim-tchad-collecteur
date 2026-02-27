@@ -1,11 +1,13 @@
 import { database } from "@/app/database";
 import { createProductLocal } from "@/app/database/services/product/createProduct";
+import { updateProductLocal } from "@/app/database/services/product/updateProduct";
 import { CustomInput } from "@/components/common/CustomInput";
 import { FormSelect } from "@/components/common/CustomSelect";
 import { ImagePickerSection } from "@/components/common/ImagePickerSection";
 import { useAuth } from "@/contexts/auth"; // pour obtenir l'utilisateur connecté
 import { useData } from "@/contexts/Data/useData";
 import * as ImagePicker from "expo-image-picker";
+import { router } from "expo-router";
 import { UserIcon } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
@@ -29,6 +31,10 @@ interface ImageAsset {
   uri: string;
   fileName?: string;
   type?: string;
+}
+
+interface ProductFormWizardProps {
+  productId?: string; // ID du produit à modifier (optionnel)
 }
 
 // État initial du formulaire
@@ -87,7 +93,9 @@ const steps = [
   },
 ];
 
-export default function ProductFormWizard() {
+export default function ProductFormWizard({
+  productId,
+}: ProductFormWizardProps) {
   const { user } = useAuth();
   const { createProduct } = useData();
 
@@ -224,7 +232,6 @@ export default function ProductFormWizard() {
     }
   };
 
-  // Gestion de la photo
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -269,52 +276,113 @@ export default function ProductFormWizard() {
     handleChange("photo", null);
   };
 
+  useEffect(() => {
+    if (productId) {
+      loadProductData();
+    }
+  }, [productId]);
+
+  const loadProductData = async () => {
+    try {
+      const productsCollection = database.get("products");
+      const product = await productsCollection.find(productId!);
+
+      setForm({
+        name: product.name,
+        code: product.code,
+        description: product.description || "",
+        product_type_id: product.product_type_id || "",
+        speculation_id: product.speculation_id || "",
+        unit_of_measure_id: product.unit_of_measure_id || "",
+        production_area_id: product.production_area_id || "",
+        actor_id: product.actor_id || "",
+        store_id: product.store_id || "",
+        quantity: product.quantity?.toString() || "",
+        price: product.price?.toString() || "",
+        origin: product.origin || "",
+        shape: product.shape || "",
+        measure_used: product.measure_used || "",
+        photo: product.photo
+          ? { uri: product.photo, fileName: "photo.jpg" }
+          : null,
+        production_date: product.production_date || "",
+      });
+    } catch (error) {
+      console.error("Erreur chargement produit:", error);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
 
     setIsSubmitting(true);
     try {
-      const newProduct = await createProductLocal({
-        name: form.name,
-        code: form.code,
-        description: form.description,
-        product_type_id: Number(form.product_type_id),
-        speculation_id: Number(form.speculation_id),
-        unit_of_measure_id: Number(form.unit_of_measure_id),
-        production_area_id: Number(form.production_area_id),
-        actor_id: Number(user?.id),
-        store_id: Number(form.store_id),
-        quantity: Number(form.quantity),
-        price: Number(form.price),
-        origin: form.origin,
-        shape: form.shape,
-        measure_used: form.measure_used,
-        photo: form.photo?.uri || null, // URI de l'image ou null
-        production_date: form.production_date,
-      });
+      if (productId) {
+        // update product
+        await updateProductLocal(productId, {
+          name: form.name,
+          code: form.code,
+          description: form.description,
+          product_type_id: Number(form.product_type_id),
+          speculation_id: Number(form.speculation_id),
+          unit_of_measure_id: Number(form.unit_of_measure_id),
+          production_area_id: Number(form.production_area_id),
+          actor_id: Number(form.actor_id || user?.id),
+          store_id: Number(form.store_id),
+          quantity: Number(form.quantity),
+          price: Number(form.price),
+          origin: form.origin,
+          shape: form.shape,
+          measure_used: form.measure_used,
+          photo: form.photo?.uri || null,
+          production_date: form.production_date,
+        });
+        Alert.alert("Succès", "Produit modifié avec succès");
+        router.back();
+      } else {
+        // create product
+        const newProduct = await createProductLocal({
+          name: form.name,
+          code: form.code,
+          description: form.description,
+          product_type_id: Number(form.product_type_id),
+          speculation_id: Number(form.speculation_id),
+          unit_of_measure_id: Number(form.unit_of_measure_id),
+          production_area_id: Number(form.production_area_id),
+          actor_id: Number(user?.id),
+          store_id: Number(form.store_id),
+          quantity: Number(form.quantity),
+          price: Number(form.price),
+          origin: form.origin,
+          shape: form.shape,
+          measure_used: form.measure_used,
+          photo: form.photo?.uri || null, // URI de l'image ou null
+          production_date: form.production_date,
+        });
 
-      console.log("✅ Produit créé localement:", newProduct.id);
-      // si le produit est creer avec succe renvoyer le au debu du formulaire avec les champ vide
-      setForm({
-        name: "",
-        code: "",
-        description: "",
-        product_type_id: "",
-        speculation_id: "",
-        unit_of_measure_id: "",
-        production_area_id: "",
-        actor_id: "",
-        store_id: "",
-        quantity: "",
-        price: "",
-        origin: "",
-        shape: "",
-        measure_used: "",
-        photo: null,
-        production_date: "",
-      });
-      setCurrentStep(0);
-      Alert.alert("Succès", "Produit créé avec succès");
+        console.log("✅ Produit créé localement:", newProduct.id);
+        // si le produit est creer avec succe renvoyer le au debu du formulaire avec les champ vide
+        setForm({
+          name: "",
+          code: "",
+          description: "",
+          product_type_id: "",
+          speculation_id: "",
+          unit_of_measure_id: "",
+          production_area_id: "",
+          actor_id: "",
+          store_id: "",
+          quantity: "",
+          price: "",
+          origin: "",
+          shape: "",
+          measure_used: "",
+          photo: null,
+          production_date: "",
+        });
+        setCurrentStep(0);
+        Alert.alert("Succès", "Produit créé avec succès");
+      }
     } catch (error: any) {
       console.error("❌ Erreur création:", error);
 
@@ -329,7 +397,7 @@ export default function ProductFormWizard() {
       setIsSubmitting(false);
     }
   };
-
+  const isEditMode = !!productId;
   // Rendu du formulaire pour l'étape courante
   const renderStep = () => {
     if (loadingOptions) {
@@ -567,7 +635,7 @@ export default function ProductFormWizard() {
                 <ActivityIndicator size="small" color="white" />
               ) : (
                 <Text className="text-black font-semibold">
-                  Créer le produit
+                  {isEditMode ? "Modifier le produit" : "Créer le produit"}
                 </Text>
               )}
             </TouchableOpacity>

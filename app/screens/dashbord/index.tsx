@@ -1,4 +1,6 @@
+import { getProducts } from "@/app/database/services/product/getProducts";
 import { useTabBarHeight } from "@/hooks/use-tab-bar-height";
+import { Product } from "@/types/product";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -71,6 +73,7 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const isDark = colorScheme === "dark";
   const tabBarHeight = useTabBarHeight();
+  const [lastProducts, setLastProducts] = useState<Product[]>([]);
 
   const { sync } = useDatabase();
   const [stats, setStats] = useState({
@@ -82,19 +85,14 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchStats = async () => {
+  const fetchData = async () => {
     try {
+      setLoading(true);
+      // Compteurs
       const pCount = await database.get("products").query().count;
       const aCount = await database.get("actors").query().count;
       const sCount = await database.get("stores").query().count;
       const cCount = await database.get("categories").query().count;
-      const ptCount = await database.get("product_types").query().count;
-      const uomCount = await database.get("units_of_measure").query().count;
-      const specCount = await database.get("speculations").query().count;
-      const paCount = await database.get("production_areas").query().count;
-      const curCount = await database.get("currencies").query().count;
-      const setCount = await database.get("settings").query().count;
-      const taCount = await database.get("type_actors").query().count;
 
       setStats({
         products: pCount,
@@ -102,21 +100,29 @@ export default function DashboardScreen() {
         stores: sCount,
         categories: cCount,
       });
+
+      // Derniers produits (triés par date de création)
+      const products = await getProducts(); // depuis ton service
+      const sorted = products.sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+      setLastProducts(sorted.slice(0, 3));
     } catch (error) {
-      console.error("Error fetching stats:", error);
+      console.error("Erreur chargement données:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchStats();
+    fetchData();
   }, []);
 
   const handleManualSync = async () => {
     setRefreshing(true);
     await sync();
-    await fetchStats();
+    await fetchData();
     setRefreshing(false);
   };
 
@@ -254,7 +260,7 @@ export default function DashboardScreen() {
                   </View>
                   <View className="w-7 h-7 rounded-full bg-slate-200 dark:bg-zinc-700 items-center justify-center border-2 border-white dark:border-card-dark">
                     <Text className="text-[10px] font-bold text-slate-600 dark:text-slate-300">
-                      +24
+                      +{stats.products}
                     </Text>
                   </View>
                 </View>
@@ -297,49 +303,49 @@ export default function DashboardScreen() {
             </View>
 
             <View className="flex-row gap-6">
-              {/* Liste des produits */}
               <View className="flex-1 space-y-4">
-                <View className="flex-row items-center gap-3">
-                  <View className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/30 items-center justify-center">
-                    <MaterialIcons name="grain" size={20} color="#ea580c" />
-                  </View>
-                  <View>
-                    <Text className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                      Maïs
-                    </Text>
-                    <Text className="text-[11px] font-semibold text-primary">
-                      450 XAF{" "}
-                      <Text className="text-slate-400 font-normal">/ kg</Text>
-                    </Text>
-                  </View>
-                </View>
-                <View className="flex-row items-center gap-3">
-                  <View className="w-9 h-9 rounded-xl bg-green-50 dark:bg-green-950/30 items-center justify-center">
-                    <MaterialIcons name="eco" size={20} color="#16a34a" />
-                  </View>
-                  <View>
-                    <Text className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                      Mil
-                    </Text>
-                    <Text className="text-[11px] font-semibold text-primary">
-                      300 XAF{" "}
-                      <Text className="text-slate-400 font-normal">/ kg</Text>
-                    </Text>
-                  </View>
-                </View>
-                <View className="flex-row items-center gap-3">
-                  <View className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/30 items-center justify-center">
-                    <MaterialIcons name="pets" size={20} color="#dc2626" />
-                  </View>
-                  <View>
-                    <Text className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                      Bétail (Ovin)
-                    </Text>
-                    <Text className="text-[11px] font-semibold text-primary">
-                      25,000 XAF
-                    </Text>
-                  </View>
-                </View>
+                {lastProducts.length > 0 ? (
+                  lastProducts.map((product) => (
+                    <View
+                      key={product.id}
+                      className="flex-row items-center gap-3"
+                    >
+                      <View className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 items-center justify-center overflow-hidden">
+                        {product.photo ? (
+                          <Image
+                            source={{ uri: product.photo }}
+                            className="w-full h-full"
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <MaterialIcons
+                            name="inventory"
+                            size={20}
+                            color="#64748b"
+                          />
+                        )}
+                      </View>
+                      <View>
+                        <Text
+                          className="text-xs font-bold text-slate-700 dark:text-slate-200"
+                          numberOfLines={1}
+                        >
+                          {product.name}
+                        </Text>
+                        <Text className="text-[11px] font-semibold text-primary">
+                          {product.price} XAF{" "}
+                          <Text className="text-slate-400 font-normal">
+                            / {product.measure_used || "unité"}
+                          </Text>
+                        </Text>
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <Text className="text-sm text-gray-500">
+                    Aucun produit récent
+                  </Text>
+                )}
               </View>
 
               {/* Cercle de progression */}
