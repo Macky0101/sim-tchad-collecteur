@@ -344,7 +344,7 @@ export default function DashboardScreen() {
 
               {/* Cercle de progression */}
               <View className="items-center">
-                <ProgressCircle percentage={90} />
+                <ProgressCircle percentage={30} />
                 <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter text-center mt-2">
                   Objectif de{"\n"}Collecte
                 </Text>

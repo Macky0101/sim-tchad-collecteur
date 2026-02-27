@@ -64,12 +64,12 @@ export default function UserProductsScreen() {
     // ✅ Filtre avec product_type_id === serverId du type sélectionné
     if (selectedServerTypeId && selectedServerTypeId !== "0") {
       result = result.filter((p) => p.product_type_id === selectedServerTypeId);
-      console.log(
-        "🔍 Filtrage par serverId:",
-        selectedServerTypeId,
-        "Produits trouvés:",
-        result.length,
-      );
+      // console.log(
+      //   " Filtrage par serverId:",
+      //   selectedServerTypeId,
+      //   "Produits trouvés:",
+      //   result.length,
+      // );
     }
 
     if (searchQuery.trim() !== "") {
@@ -146,7 +146,7 @@ export default function UserProductsScreen() {
             const serverIdToUse =
               productType.serverId === "0" ? "0" : productType.serverId;
             setSelectedServerTypeId(serverIdToUse);
-            console.log("✅ Type sélectionné - serverId:", serverIdToUse);
+            // console.log("Type sélectionné - serverId:", serverIdToUse);
           }}
         />
 

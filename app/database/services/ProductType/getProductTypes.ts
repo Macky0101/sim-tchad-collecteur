@@ -19,17 +19,17 @@ export const getProductTypes = async (): Promise<ProductType[]> => {
           // _raw: type._raw,
         };
 
-        console.log("Type avec serverId:", {
-          id: type.id,
-          serverId,
-          name: type.name,
-          // _raw: type._raw,
-        });
+        // console.log("Type avec serverId:", {
+        //   id: type.id,
+        //   serverId,
+        //   name: type.name,
+        //   // _raw: type._raw,
+        // });
 
         return typeData;
       });
 
-      console.log(" Types JSON:", JSON.stringify(typesWithServerId, null, 2));
+      // console.log(" Types JSON:", JSON.stringify(typesWithServerId, null, 2));
 
       return typesWithServerId;
     });
