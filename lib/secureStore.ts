@@ -42,3 +42,11 @@ export const getUserData = async <T = unknown>(): Promise<T | null> => {
 export const deleteUserData = async () => {
   await SecureStore.deleteItemAsync(STORAGE_KEYS.userData);
 };
+
+export const saveDailyGoal = async (goal: string) => {
+  await SecureStore.setItemAsync(STORAGE_KEYS.dailyGoal, goal);
+};
+
+export const getDailyGoal = async (): Promise<string | null> => {
+  return await SecureStore.getItemAsync(STORAGE_KEYS.dailyGoal);
+};

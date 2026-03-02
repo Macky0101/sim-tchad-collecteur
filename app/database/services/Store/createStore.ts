@@ -22,6 +22,9 @@ export const createStoreLocal = async (data: CreateStoreRequest) => {
       store.address = data.address ?? "";
       store.phone = data.phone ?? "";
       store.is_active = 1;
+      store.latitude = data.latitude ?? "";
+      store.longitude = data.longitude ?? "";
+      store.whatsapp = data.whatsapp ?? "";
     });
   });
 };

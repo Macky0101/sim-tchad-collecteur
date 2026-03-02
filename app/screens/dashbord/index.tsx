@@ -1,5 +1,6 @@
 import { getProducts } from "@/app/database/services/product/getProducts";
 import { useTabBarHeight } from "@/hooks/use-tab-bar-height";
+import { getDailyGoal } from "@/lib/secureStore";
 import { Product } from "@/types/product";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
@@ -74,6 +75,8 @@ export default function DashboardScreen() {
   const isDark = colorScheme === "dark";
   const tabBarHeight = useTabBarHeight();
   const [lastProducts, setLastProducts] = useState<Product[]>([]);
+  const [dailyGoal, setDailyGoal] = useState(50);
+  const [todayCount, setTodayCount] = useState(0);
 
   const { sync } = useDatabase();
   const [stats, setStats] = useState({
@@ -108,6 +111,15 @@ export default function DashboardScreen() {
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
       setLastProducts(sorted.slice(0, 3));
+
+      // Récupérer l'objectif
+      const goal = await getDailyGoal();
+      if (goal) setDailyGoal(parseInt(goal, 10));
+
+      // Compter les produits d'aujourd'hui (production_date)
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      const todayProducts = products.filter((p) => p.production_date === today);
+      setTodayCount(todayProducts.length);
     } catch (error) {
       console.error("Erreur chargement données:", error);
     } finally {
@@ -350,7 +362,9 @@ export default function DashboardScreen() {
 
               {/* Cercle de progression */}
               <View className="items-center">
-                <ProgressCircle percentage={30} />
+                <ProgressCircle
+                  percentage={Math.min(100, (todayCount / dailyGoal) * 100)}
+                />
                 <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter text-center mt-2">
                   Objectif de{"\n"}Collecte
                 </Text>

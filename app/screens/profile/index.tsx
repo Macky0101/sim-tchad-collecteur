@@ -1,11 +1,16 @@
+import { getProducts } from "@/app/database/services/product/getProducts";
+import { useAuth } from "@/contexts/auth";
+import { getDailyGoal, saveDailyGoal } from "@/lib/secureStore";
 import { MaterialIcons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React, { useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Image,
+  Modal,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   useColorScheme,
   View,
@@ -14,44 +19,99 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+
 const PRIMARY = "#13ec13";
-const BG_LIGHT = "#f6f8f6";
-const BG_DARK = "#102210";
 
 export default function ProfileAndSyncScreen() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { user, signOut } = useAuth();
 
-  // États simulés
-  const [isOnline] = useState(false); // pour l'icône wifi_off
-  const [pendingSyncCount] = useState(12);
-  const [syncProgress] = useState(0); // 0%
+  const [isOnline, setIsOnline] = useState(false); // à connecter avec le réseau
+  const [pendingSyncCount, setPendingSyncCount] = useState(0);
+  const [lastSyncDate, setLastSyncDate] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Objectif journalier
+  const [dailyGoal, setDailyGoal] = useState("50");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [tempGoal, setTempGoal] = useState("");
+
+  // Chargement initial de l'objectif
+  useEffect(() => {
+    const loadGoal = async () => {
+      const goal = await getDailyGoal();
+      if (goal) setDailyGoal(goal);
+    };
+    loadGoal();
+  }, []);
+
+  const loadData = async () => {
+    if (!user?.id) return;
+    try {
+      const products = await getProducts();
+      const userProducts = products.filter(
+        (p) => String(p.actor_id) === String(user.id),
+      );
+      setPendingSyncCount(userProducts.length); // en attendant la vraie synchro
+      setLastSyncDate("Aujourd'hui, 08:30"); // à remplacer par la vraie date
+    } catch (error) {
+      console.error("Erreur chargement données profil:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [user?.id]),
+  );
 
   const handleSync = () => {
     Alert.alert("Synchronisation", "Lancement de la synchronisation...");
+    // Implémenter la synchro réelle
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     Alert.alert("Déconnexion", "Voulez-vous vraiment vous déconnecter ?", [
       { text: "Annuler", style: "cancel" },
       {
         text: "Se déconnecter",
         style: "destructive",
-        onPress: () => {
-          router.push("/(auth)/login");
+        onPress: async () => {
+          try {
+            await signOut();
+            router.replace("/(auth)/login");
+          } catch (error) {
+            Alert.alert("Erreur", "Impossible de se déconnecter");
+          }
         },
       },
     ]);
+  };
+
+  const saveGoal = async () => {
+    await saveDailyGoal(tempGoal);
+    setDailyGoal(tempGoal);
+    setModalVisible(false);
   };
 
   const navigateTo = (route: string) => {
     Alert.alert("Navigation", `Vers ${route}`);
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+        <Text>Chargement du profil...</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <View className="flex-1 bg-background-light dark:bg-background-dark">
-      {/* Header fixe */}
+      {/* Header */}
       <SafeAreaView
         edges={["top"]}
         className="bg-background-light/80 dark:bg-background-dark/80"
@@ -72,7 +132,6 @@ export default function ProfileAndSyncScreen() {
         </View>
       </SafeAreaView>
 
-      {/* Contenu défilant */}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 100 + insets.bottom }}
@@ -83,13 +142,17 @@ export default function ProfileAndSyncScreen() {
           <View className="relative">
             <View className="w-32 h-32 rounded-full border-4 border-primary/20 p-1">
               <View className="w-full h-full rounded-full bg-primary/10 overflow-hidden">
-                <Image
-                  source={{
-                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuAv0pXySvFTRuqQsRZ6PDnGE3dP94rXKwemZ5hYZ9opxA8H8R8AsGkCBffuaIe51QQ3F3zOZE4wXk603eBHT6X8JXwAYLRTDyBMMfC-hfs3aFWDhiiE2KKRGJRR-7gbFqST3R1rXGoDvbIgVZt_AKdradrrODeOyGvLedvSFhtYx_GMGCEfkDf0CC4DSIbX-WCo2QnOWgYQfDXjCWlvcBINn0j6yP_rOlHxRHCk64KKsNraKnC0xxVtMIXbAd1DpxXRPhjdsEXRiZw2",
-                  }}
-                  className="w-full h-full"
-                  resizeMode="cover"
-                />
+                {user?.logo ? (
+                  <Image
+                    source={{ uri: user.logo }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View className="w-full h-full items-center justify-center">
+                    <MaterialIcons name="person" size={40} color={PRIMARY} />
+                  </View>
+                )}
               </View>
             </View>
             <View className="absolute bottom-1 right-1 bg-primary p-1.5 rounded-full border-2 border-background-light dark:border-background-dark">
@@ -99,16 +162,30 @@ export default function ProfileAndSyncScreen() {
 
           <View className="mt-4 items-center">
             <Text className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-              Moussa Ibrahim
-            </Text>
-            <Text className="text-slate-500 dark:text-slate-400 font-medium">
-              ID: CH-23548
+              {user?.actor || "Utilisateur"}
             </Text>
             <View className="mt-2 flex-row items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
               <MaterialIcons name="location-on" size={14} color={PRIMARY} />
               <Text className="text-sm font-semibold text-primary ml-1">
-                Collecteur - N'Djamena
+                {user?.actor || "Collecteur"} - {user?.address || "N'Djamena"}
               </Text>
+            </View>
+
+            {/* Objectif journalier */}
+            <View className="mt-4 flex-row items-center">
+              <MaterialIcons name="flag" size={14} color={PRIMARY} />
+              <Text className="text-sm text-slate-600 ml-1">
+                Objectif journalier: {dailyGoal} collectes
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setTempGoal(dailyGoal);
+                  setModalVisible(true);
+                }}
+                className="ml-2"
+              >
+                <MaterialIcons name="edit" size={16} color={PRIMARY} />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -122,7 +199,7 @@ export default function ProfileAndSyncScreen() {
             </View>
             <View className="px-2 py-1 rounded bg-amber-100 dark:bg-amber-900/30">
               <Text className="text-xs font-bold text-amber-700 dark:text-amber-400">
-                En attente
+                {pendingSyncCount > 0 ? "En attente" : "À jour"}
               </Text>
             </View>
           </View>
@@ -139,25 +216,35 @@ export default function ProfileAndSyncScreen() {
               </View>
               <View className="items-end">
                 <Text className="text-xs text-slate-400 mb-1 italic">
-                  Dernière sync: Aujourd'hui, 08:30
+                  Dernière sync: {lastSyncDate || "Jamais"}
                 </Text>
               </View>
             </View>
 
-            {/* Barre de progression */}
             <View className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5">
               <View
                 className="bg-primary h-2.5 rounded-full"
-                style={{ width: `${syncProgress}%` }}
+                style={{ width: `${pendingSyncCount > 0 ? 0 : 100}%` }}
               />
             </View>
 
             <TouchableOpacity
               onPress={handleSync}
-              className="w-full bg-primary py-4 rounded-xl flex-row items-center justify-center gap-2"
+              disabled={pendingSyncCount === 0}
+              className={`w-full py-4 rounded-xl flex-row items-center justify-center gap-2 ${
+                pendingSyncCount === 0 ? "bg-gray-300" : "bg-primary"
+              }`}
             >
-              <MaterialIcons name="cloud-upload" size={20} color="black" />
-              <Text className="text-black font-bold">
+              <MaterialIcons
+                name="cloud-upload"
+                size={20}
+                color={pendingSyncCount === 0 ? "#666" : "black"}
+              />
+              <Text
+                className={`font-bold ${
+                  pendingSyncCount === 0 ? "text-gray-600" : "text-black"
+                }`}
+              >
                 Lancer la synchronisation
               </Text>
             </TouchableOpacity>
@@ -222,6 +309,38 @@ export default function ProfileAndSyncScreen() {
         </View>
       </ScrollView>
 
+      {/* Modal pour l'objectif */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View className="flex-1 justify-center items-center bg-black/50">
+          <View className="bg-white p-6 rounded-xl w-80">
+            <Text className="text-lg font-bold mb-4">
+              Définir l'objectif journalier
+            </Text>
+            <TextInput
+              className="border border-gray-300 rounded-lg p-3 mb-4"
+              keyboardType="numeric"
+              value={tempGoal}
+              onChangeText={setTempGoal}
+              placeholder="Nombre de collectes"
+            />
+            <View className="flex-row justify-end gap-2">
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                className="px-4 py-2"
+              >
+                <Text>Annuler</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={saveGoal}
+                className="bg-primary px-4 py-2 rounded-lg"
+              >
+                <Text className="text-black">Enregistrer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Barre de navigation inférieure */}
       <View
         className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 px-6 pt-3 flex-row justify-between items-center"
@@ -255,12 +374,7 @@ export default function ProfileAndSyncScreen() {
           onPress={() => navigateTo("Profil")}
           className="flex-col items-center gap-1"
         >
-          <MaterialIcons
-            name="person"
-            size={24}
-            color={PRIMARY}
-            style={{ fontWeight: "bold" }}
-          />
+          <MaterialIcons name="person" size={24} color={PRIMARY} />
           <Text className="text-[10px] font-bold text-primary">Profil</Text>
         </TouchableOpacity>
       </View>

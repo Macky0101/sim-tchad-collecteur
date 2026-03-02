@@ -1,19 +1,24 @@
-import { MasonryProductList, Product } from "@/components/common/ProductCard";
-import { useData } from "@/contexts/Data/useData";
+import { getProductsByStoreId } from "@/app/database/services/Store/getProductsByStoreId";
+import { getStoreById } from "@/app/database/services/Store/getStoreById";
+import { MasonryProductList } from "@/components/common/ProductCard";
+import { Product } from "@/types/product";
+import { Store } from "@/types/stores";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Linking,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Circle, Path } from "react-native-svg";
+import { WebView } from "react-native-webview";
 
-// Icônes
+// Icônes (identiques)
 const ArrowLeftIcon = () => (
   <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
     <Path
@@ -65,78 +70,79 @@ const LocationIcon = () => (
   </Svg>
 );
 
-// Données mockées (à remplacer par les données du contexte quand l'API sera prête)
-const MOCK_STORES = [
-  {
-    id: 1,
-    name: "Légumes frais",
-    code: "1",
-    description: "Légumes frais et de saison",
-    is_active: 1,
-    actor_id: 1,
-    latitude: "12.1348",
-    longitude: "15.0557",
-    address: "Marché central, N'Djaména",
-    phone: "123456789",
-    whatsapp: "123456789",
-    updated_by: "1",
-    created_at: "2022-01-01",
-    updated_at: "2022-01-01",
-  },
-  {
-    id: 2,
-    name: "Poisson frais",
-    code: "2",
-    description: "Poisson frais du Lac",
-    is_active: 1,
-    actor_id: 1,
-    latitude: "12.1111",
-    longitude: "15.0666",
-    address: "Quartier Diguel, N'Djaména",
-    phone: "987654321",
-    whatsapp: "987654321",
-    updated_by: "1",
-    created_at: "2022-01-01",
-    updated_at: "2022-01-01",
-  },
-  {
-    id: 3,
-    name: "Viande fraîche",
-    code: "3",
-    description: "Viande bovine et ovine",
-    is_active: 1,
-    actor_id: 1,
-    latitude: "12.1500",
-    longitude: "15.0333",
-    address: "Abattoir, Farcha",
-    phone: "555123456",
-    whatsapp: "555123456",
-    updated_by: "1",
-    created_at: "2022-01-01",
-    updated_at: "2022-01-01",
-  },
-];
-
-const MOCK_PRODUCTS: Product[] = [
-  // ... tes produits mockés (avec store_id correspondant)
-];
-
 export default function StoreDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const storeId = parseInt(id, 10);
-  const { products } = useData();
 
-  // Trouver le magasin correspondant
-  const store = useMemo(
-    () => MOCK_STORES.find((s) => s.id === storeId),
-    [storeId],
-  );
+  // États pour vraies données
+  const [store, setStore] = useState<Store | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [mapHtml, setMapHtml] = useState<string | null>(null);
 
-  // Filtrer les produits appartenant à ce magasin
-  const storeProducts = useMemo(() => {
-    const source = products?.length ? products : MOCK_PRODUCTS;
-    return source.filter((p) => p.store_id === storeId);
-  }, [products, storeId]);
+  // Charger magasin + produits
+  useEffect(() => {
+    const loadStoreData = async () => {
+      if (!id) return;
+      try {
+        setLoading(true);
+        const storeData = await getStoreById(id);
+        const productsData = await getProductsByStoreId(id);
+
+        setStore(storeData);
+        setProducts(productsData || []);
+
+        // Préparer HTML Leaflet
+        if (storeData?.latitude && storeData?.longitude) {
+          const lat = parseFloat(storeData.latitude);
+          const lng = parseFloat(storeData.longitude);
+          setMapHtml(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <style>
+                    html,body,#map{height:100%;margin:0;padding:0;}
+                    .leaflet-container{font:12px/1.5 Helvetica Neue,Arial,Helvetica,sans-serif;}
+                </style>
+            </head>
+            <body>
+                <div id="map"></div>
+                <script>
+                    const map = L.map('map').setView([${lat}, ${lng}], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+                    L.marker([${lat}, ${lng}]).addTo(map)
+                        .bindPopup('Magasin')
+                        .openPopup();
+                    map.dragging.disable();
+                    map.touchZoom.disable();
+                    map.doubleClickZoom.disable();
+                    map.scrollWheelZoom.disable();
+                </script>
+            </body>
+            </html>
+          `);
+        }
+      } catch (error) {
+        console.error("Erreur chargement magasin:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStoreData();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#0f7b5f" />
+      </SafeAreaView>
+    );
+  }
 
   if (!store) {
     return (
@@ -159,26 +165,40 @@ export default function StoreDetailScreen() {
   const handleWhatsApp = () =>
     Linking.openURL(`https://wa.me/${store.whatsapp}`);
   const handleOpenMaps = () => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    const url =
+      Platform.OS === "ios"
+        ? `maps:0,0?q=${lat},${lng}`
+        : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
     Linking.openURL(url);
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Grande carte en haut */}
+        {/* Grande carte Leaflet */}
         <View className="relative h-64 w-full">
-          <MapView
-            style={{ flex: 1 }}
-            initialRegion={{
-              latitude: lat,
-              longitude: lng,
-              latitudeDelta: 0.02,
-              longitudeDelta: 0.02,
-            }}
-          >
-            <Marker coordinate={{ latitude: lat, longitude: lng }} />
-          </MapView>
+          {mapHtml ? (
+            <WebView
+              source={{ html: mapHtml }}
+              style={{ flex: 1 }}
+              scalesPageToFit={false}
+              scrollEnabled={false}
+              bounces={false}
+              showsHorizontalScrollIndicator={false}
+              showsVerticalScrollIndicator={false}
+            />
+          ) : (
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "#f3f4f6",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text>Chargement carte...</Text>
+            </View>
+          )}
 
           {/* Bouton retour */}
           <TouchableOpacity
@@ -189,7 +209,7 @@ export default function StoreDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Informations du magasin */}
+        {/* Informations du magasin - IDENTIQUES */}
         <View className="p-4">
           <Text className="text-2xl font-bold text-gray-900">{store.name}</Text>
           <Text className="mt-1 text-sm text-gray-600">
@@ -226,7 +246,7 @@ export default function StoreDetailScreen() {
             )}
           </View>
 
-          {/* Lien vers Google Maps */}
+          {/* Lien vers Maps */}
           <TouchableOpacity
             onPress={handleOpenMaps}
             className="mt-4 flex-row items-center justify-center rounded-lg border border-[#0f7b5f] py-3"
@@ -236,13 +256,11 @@ export default function StoreDetailScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Séparateur */}
           <View className="my-6 h-px bg-gray-200" />
 
-          {/* Produits du magasin */}
           <Text className="mb-4 text-xl font-bold">Produits disponibles</Text>
           <MasonryProductList
-            products={storeProducts}
+            products={products}
             onProductPress={(product) =>
               router.push({
                 pathname: "/screens/products/[id]",

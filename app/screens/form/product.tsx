@@ -4,7 +4,7 @@ import { updateProductLocal } from "@/app/database/services/product/updateProduc
 import { CustomInput } from "@/components/common/CustomInput";
 import { FormSelect } from "@/components/common/CustomSelect";
 import { ImagePickerSection } from "@/components/common/ImagePickerSection";
-import { useAuth } from "@/contexts/auth"; // pour obtenir l'utilisateur connecté
+import { useAuth } from "@/contexts/auth";
 import { useData } from "@/contexts/Data/useData";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
@@ -129,7 +129,7 @@ export default function ProductFormWizard({
           database.get("stores").query().fetch(),
         ]);
 
-        // ✅ CORRECTION : Extraire server_id depuis _raw
+        // Extraire server_id depuis _raw
         setProductTypes(
           pt.map((item: any) => ({
             value: item._raw?.server_id || item.serverId || String(item.id),
@@ -599,6 +599,10 @@ export default function ProductFormWizard({
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      {/* <KeyboardAwareScrollView
+        bottomOffset={62}
+        contentContainerStyle={{ padding: 16 }}
+      > */}
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <StepIndicator />
         <Text className="text-xl font-bold text-gray-800 mb-4">
@@ -648,6 +652,8 @@ export default function ProductFormWizard({
           )}
         </View>
       </ScrollView>
+      {/* </KeyboardAwareScrollView> */}
+      {/* <KeyboardToolbar /> */}
     </SafeAreaView>
   );
 }

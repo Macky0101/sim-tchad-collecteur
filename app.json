@@ -77,7 +77,8 @@
             "compileSdkVersion": 35
           }
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -3,4 +3,5 @@ export const STORAGE_KEYS = {
   refreshToken: "auth_refresh_token",
   userData: "auth_user_data",
   onboardingCompleted: "onboarding_completed",
+  dailyGoal: "user_daily_goal",
 } as const;

@@ -22,20 +22,20 @@ export const createProductLocal = async (data: CreateProductRequest) => {
       product.description = data.description ?? "";
 
       // Les IDs viennent des selects : ce sont les server_id (strings comme "1", "2"...)
-      product.product_type_id = String(data.product_type_id);
-      product.speculation_id = String(data.speculation_id);
-      product.unit_of_measure_id = String(data.unit_of_measure_id);
-      product.production_area_id = String(data.production_area_id);
-      product.actor_id = String(data.actor_id);
-      product.store_id = String(data.store_id);
+      product.productTypeId = String(data.product_type_id);
+      product.speculationId = String(data.speculation_id);
+      product.unitOfMeasureId = String(data.unit_of_measure_id);
+      product.productionAreaId = String(data.production_area_id);
+      product.actorId = String(data.actor_id);
+      product.storeId = String(data.store_id);
 
       product.quantity = Number(data.quantity);
       product.price = Number(data.price);
       product.origin = data.origin;
       product.shape = data.shape;
-      product.measure_used = data.measure_used;
+      product.measureUsed = data.measure_used;
       product.photo = data.photo ?? null;
-      product.production_date = data.production_date;
+      product.productionDate = new Date(data.production_date).getTime();
     });
     console.log("✅ Produit créé localement:", createdProduct);
     return createdProduct;

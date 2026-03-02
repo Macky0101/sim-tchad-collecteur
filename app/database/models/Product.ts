@@ -5,10 +5,7 @@ import { Speculation } from "@/types/speculation";
 import { Store } from "@/types/stores";
 import { UnitOfMeasure } from "@/types/unitsOfMeasure";
 import { Model } from "@nozbe/watermelondb";
-import {
-    field,
-    immutableRelation
-} from "@nozbe/watermelondb/decorators";
+import { field, immutableRelation } from "@nozbe/watermelondb/decorators";
 import { Associations } from "@nozbe/watermelondb/Model";
 
 export default class Product extends Model {
